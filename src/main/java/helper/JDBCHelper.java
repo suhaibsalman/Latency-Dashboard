@@ -6,6 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
+
+import Utils.Constants;
+import dao.JDBCDaoImpl;
+
 public class JDBCHelper
 {
 	private static final String URL = "URL";
@@ -15,13 +20,15 @@ public class JDBCHelper
 	
 	private static Connection connection;
 	
-	private static JDBCConstants jdbcConstants = new JDBCConstants();
+	private static Constants jdbcConstants = new Constants();
+	
+	private static Logger logger = Logger.getLogger(JDBCDaoImpl.class);
 
 	static {
 		try {
 			Class.forName(jdbcConstants.getPram(DRIVER_NAME));
 		} catch (ClassNotFoundException e) {
-			System.out.println("Driver class not found");
+			logger.error("Driver class not found" + e.getMessage());
 		}
 	}
 

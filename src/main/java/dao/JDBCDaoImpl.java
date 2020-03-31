@@ -4,19 +4,25 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
+
+import com.example.demo.MbLatencyTool1Application;
+
 import entity.LatencyDashboard;
 import helper.JDBCHelper;
 
 public class JDBCDaoImpl {
 	public static final String INSERT_ORACLE_QUERY = "INSERT INTO LatencyDashbord(Date,SessionID,ServiceName,DiffWithLastRequest,Type,TransID) VALUES(?,?,?,?,?,?)";
-
+	
+	private static Logger logger = Logger.getLogger(JDBCDaoImpl.class);
+	
 	public static void insertLatencyRecord(LatencyDashboard latencyDashboard) throws SQLException {
 		Connection con = null;
 		PreparedStatement ps = null;
 		try {
 			con = JDBCHelper.getConnection();
 			if (con == null) {
-				System.out.println("Error getting the connection. Please check if the DB server is running");
+				logger.error("Error getting the connection. Please check if the DB server is running");
 				return;
 			}
 			con.setAutoCommit(false);
@@ -30,7 +36,7 @@ public class JDBCDaoImpl {
 			ps.setString(6, latencyDashboard.getTransID());
 
 			ps.execute();
-			System.out.println("insert => " + ps.toString());
+			logger.info("insert => " + ps.toString());
 			con.commit();
 
 		} catch (SQLException e) {

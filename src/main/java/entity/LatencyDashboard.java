@@ -5,8 +5,8 @@ public class LatencyDashboard {
 	private String sessionID;
 	private String serviceName;
 	private String diffWithLastRequest;
-	private String Type;
-	private String TransID;
+	private String type;
+	private String transID;
 	
 	public LatencyDashboard(String date, String sessionID, String serviceName, String diffWithLastRequest, String type,
 			String transID) {
@@ -15,8 +15,8 @@ public class LatencyDashboard {
 		this.sessionID = sessionID;
 		this.serviceName = serviceName;
 		this.diffWithLastRequest = diffWithLastRequest;
-		Type = type;
-		TransID = transID;
+		this.type = type;
+		this.transID = transID;
 	}
 	
 	public String getDate() {
@@ -43,21 +43,17 @@ public class LatencyDashboard {
 	public void setDiffWithLastRequest(String diffWithLastRequest) {
 		this.diffWithLastRequest = diffWithLastRequest;
 	}
-
 	public String getType() {
-		return Type;
+		return type;
 	}
-
 	public void setType(String type) {
-		Type = type;
+		this.type = type;
 	}
-
 	public String getTransID() {
-		return TransID;
+		return transID;
 	}
-
 	public void setTransID(String transID) {
-		TransID = transID;
+		this.transID = transID;
 	}
 	
 }
