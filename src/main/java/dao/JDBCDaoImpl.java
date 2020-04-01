@@ -12,7 +12,7 @@ import entity.LatencyDashboard;
 import helper.JDBCHelper;
 
 public class JDBCDaoImpl {
-	public static final String INSERT_ORACLE_QUERY = "INSERT INTO LatencyDashbord(Date,SessionID,ServiceName,DiffWithLastRequest,Type,TransID) VALUES(?,?,?,?,?,?)";
+	public static final String INSERT_ORACLE_QUERY = "INSERT INTO LatencyDashbord(\"Date\",SessionID,ServiceName,DiffWithLastRequest,Type,TransID,CurrentDate) VALUES(?,?,?,?,?,?,?)";
 	
 	private static Logger logger = Logger.getLogger(JDBCDaoImpl.class);
 	
@@ -34,6 +34,7 @@ public class JDBCDaoImpl {
 			ps.setString(4, latencyDashboard.getDiffWithLastRequest());
 			ps.setString(5, latencyDashboard.getType());
 			ps.setString(6, latencyDashboard.getTransID());
+			ps.setString(7, latencyDashboard.getCurrentDate());
 
 			ps.execute();
 			logger.info("insert => " + ps.toString());

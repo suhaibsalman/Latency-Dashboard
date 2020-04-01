@@ -4,14 +4,18 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-
+ 
 import Utils.Constants;
 import dao.JDBCDaoImpl;
 import entity.LatencyDashboard;
@@ -20,14 +24,16 @@ import entity.LatencyDashboard;
 public class MbLatencyTool1Application {
 	private static long lastRowPos = 0;
 
-	private static String date = null;
-	private static String sessionID = null;
-	private static String serviceName = null;
-	private static String channelTrxRef = null;
-	private static String requestId = null;
-	private static String type = null;
-
-	private static Scanner myReader = null;
+	private static String date = "";
+	private static String sessionID = "";
+	private static String serviceName = "";
+	private static String channelTrxRef = "";
+	private static String requestId = "";
+	private static String type = "";
+	
+	private static final String WEBSERVICE = "webservices";
+	private static final String DATE_PATTERN = "yyyy-mm-dd";
+	private static final String FILE_EXTENTION = "log";
 
 	private static final String ID_TAG = "sId:";
 	private static final String END_SEPARATOR = "]";
@@ -66,11 +72,14 @@ public class MbLatencyTool1Application {
 		TimerTask myTask = new TimerTask() {
 			@Override
 			public void run() {
-				//readFormFile(getFilePath());
+				if(checkFilePattern())
+					readFormFile(getFilePath());
+				else
+					logger.error("File pattern doesn't correct");
 			}
 		};
 
-		timer.schedule(myTask, 4, rTime);
+		timer.schedule(myTask, 0, rTime);
 	}
 
 	private static void readFormFile(String path) {
@@ -168,27 +177,21 @@ public class MbLatencyTool1Application {
 	}
 
 	private static void resetParameter() {
-		date = null;
-		sessionID = null;
-		serviceName = null;
-		channelTrxRef = null;
-		requestId = null;
-		type = null;
-	}
-
-	private static boolean isMiddleWare() {
-		if (type.equals(MIDDLE_WARE)) {
-			return true;
-		} else {
-			return false;
-		}
+		date = "";
+		sessionID = "";
+		serviceName = "";
+		channelTrxRef = "";
+		requestId = "";
+		type = "";
 	}
 
 	private static LatencyDashboard getRecord() {
-		if (isMiddleWare()) {
-			return new LatencyDashboard(date, sessionID, serviceName, "", type, channelTrxRef);
+		if (type.equals(MIDDLE_WARE)) {
+			return new LatencyDashboard(date, sessionID, serviceName, "", type, channelTrxRef, getCurrentDate());
+		} else if (type.equals(INTERNET_BANKING)) {
+			return new LatencyDashboard(date, sessionID, serviceName, "", type, requestId, getCurrentDate());
 		} else {
-			return new LatencyDashboard(date, sessionID, serviceName, "", type, requestId);
+			return new LatencyDashboard(date, sessionID, serviceName, "", type, "", getCurrentDate());
 		}
 	}
 
@@ -197,4 +200,45 @@ public class MbLatencyTool1Application {
 		return filePath;
 	}
 
+	private static String getCurrentDate() {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		Date date = new Date();
+
+		return dateFormat.format(date);
+	}
+	
+	private static boolean checkFilePattern() {
+		String filePath = Constants.getPram(FILE_PATH);
+
+		String[] parts = filePath.split(Pattern.quote("."));
+
+		if (parts.length != 4) {
+			return false;
+		}
+		if (!parts[0].equals(WEBSERVICE)) {
+			return false;
+		}
+		if (!isValidFormat(DATE_PATTERN, parts[1])) {
+			return false;
+		}
+		if (!parts[3].equals(FILE_EXTENTION)) {
+			return false;
+		}
+		
+		return true;
+	}
+	
+	public static boolean isValidFormat(String format, String value) {
+	    Date date = null;
+	    try {
+	           SimpleDateFormat sdf = new SimpleDateFormat(format);
+	           date = sdf.parse(value);
+	           if (!value.equals(sdf.format(date))) {
+	               date = null;
+	           }
+	        } catch (ParseException ex) {
+	           ex.printStackTrace();
+	        }
+	    return date != null;
+	}
 }
