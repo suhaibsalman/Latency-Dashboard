@@ -8,7 +8,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Scanner;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.regex.Pattern;
@@ -32,7 +31,8 @@ public class MbLatencyTool1Application {
 	private static String type = "";
 	
 	private static final String WEBSERVICE = "webservices";
-	private static final String DATE_PATTERN = "yyyy-mm-dd";
+	private static final String DATE_PATTERN = "yyyy-MM-dd";
+	private static final String DATE_PATTERN2 = "yyyy-MM-dd";
 	private static final String FILE_EXTENTION = "log";
 
 	private static final String ID_TAG = "sId:";
@@ -61,6 +61,7 @@ public class MbLatencyTool1Application {
 	public static void main(String[] args) {
 		logger.info("Start Java Application");
 		repeatEachXSecond(getRepeatedTime());
+		
 	}
 
 	private static long getRepeatedTime() {
@@ -72,10 +73,7 @@ public class MbLatencyTool1Application {
 		TimerTask myTask = new TimerTask() {
 			@Override
 			public void run() {
-				if(checkFilePattern())
-					readFormFile(getFilePath());
-				else
-					logger.error("File pattern doesn't correct");
+				readFormFile(getFilePath());
 			}
 		};
 
@@ -91,9 +89,9 @@ public class MbLatencyTool1Application {
 
 			String contentLine = br.readLine();
 			while (contentLine != null) {
+				incLastPos(contentLine.length());
 				validate(contentLine.trim());
 				contentLine = br.readLine();
-				incLastPos();
 			}
 
 		} catch (IOException ioe) {
@@ -109,8 +107,8 @@ public class MbLatencyTool1Application {
 		}
 	}
 
-	private static void incLastPos() {
-		lastRowPos++;
+	private static void incLastPos(long charNum) {
+		lastRowPos = lastRowPos + charNum;
 	}
 
 	private static long getStartPos() {
@@ -187,24 +185,27 @@ public class MbLatencyTool1Application {
 
 	private static LatencyDashboard getRecord() {
 		if (type.equals(MIDDLE_WARE)) {
-			return new LatencyDashboard(date, sessionID, serviceName, "", type, channelTrxRef, getCurrentDate());
+			return new LatencyDashboard(date, sessionID, serviceName, "", type, channelTrxRef, getCurrentDate(DATE_PATTERN2));
 		} else if (type.equals(INTERNET_BANKING)) {
-			return new LatencyDashboard(date, sessionID, serviceName, "", type, requestId, getCurrentDate());
+			return new LatencyDashboard(date, sessionID, serviceName, "", type, requestId, getCurrentDate(DATE_PATTERN2));
 		} else {
-			return new LatencyDashboard(date, sessionID, serviceName, "", type, "", getCurrentDate());
+			return new LatencyDashboard(date, sessionID, serviceName, "", type, "", getCurrentDate(DATE_PATTERN2));
 		}
 	}
 
 	private static String getFilePath() {
-		String filePath = Constants.getPram(FOLDER_PATH) + Constants.getPram(FILE_PATH);
+		String fileName = WEBSERVICE + "." + getCurrentDate(DATE_PATTERN) + "." + "0" + "." + FILE_EXTENTION;
+		String filePath = Constants.getPram(FOLDER_PATH) + fileName;
+		
 		return filePath;
 	}
 
-	private static String getCurrentDate() {
-		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+	private static String getCurrentDate(String pattern) {
+		DateFormat dateFormat = new SimpleDateFormat(pattern);
 		Date date = new Date();
 
-		return dateFormat.format(date);
+		String currentDate = dateFormat.format(date);
+		return currentDate;
 	}
 	
 	private static boolean checkFilePattern() {
